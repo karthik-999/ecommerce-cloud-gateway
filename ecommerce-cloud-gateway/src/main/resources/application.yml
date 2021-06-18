@@ -1,0 +1,44 @@
+server:
+  port: 9991
+security:
+  basic:
+    enable: false
+  ignored: /**
+  enable-csrf: false
+  
+
+
+spring:
+  security:    user:      name: user
+      password: user
+  application:    name: api-gateway
+  main:
+    allow-bean-definition-overriding: true  cloud:    gateway:
+      routes:      - id: UserModule
+        uri: lb://user-api
+        predicates:        - Path=/user-api/users/**
+      - id: bankModule
+        uri: lb://bank-payment-app
+        predicates:        - Path=/bank-app/**
+        filters:        - RemoveRequestHeader=Cookie
+        - RewritePath=/bank-payment-app/(?<segment>.*), /$\{segment}
+
+      - id: OrderModule
+        uri: lb://order-api
+        predicates:        - Path=/order-app/**
+        - Method=GET
+        filters:        - RemoveRequestHeader=Cookie
+        - RewritePath=/order-api/order-app/order/status/check, /order-app/order/status/check
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+eureka:  client:    service-url:      defaultZone: http://localhost:8761/eureka
+      
+authorization:
+  token:
+    header:
+      name: Authorization
+      prefix: Bearer
+token:
+  secret: hfgry463hf746hf573ydh475fhy5739      
